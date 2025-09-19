@@ -115,7 +115,7 @@ const Login02 = () => {
           </a>
           <p className="text-sm text-center">
             Don't have an account?
-            <a href="#" className="ml-1 underline text-muted-foreground hover:text-foreground transition-colors">
+            <a href="/signup" className="ml-1 underline text-muted-foreground hover:text-foreground transition-colors">
               Create account
             </a>
           </p>
