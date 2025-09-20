@@ -1,3 +1,6 @@
+import React, { useState } from "react";
+
+
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -9,9 +12,13 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import API from "@/services/api";
+
+
 
 // Simple Logo component (replace with your actual logo)
 const Logo = ({ className }) => (
@@ -26,6 +33,11 @@ const formSchema = z.object({
 });
 
 const Login02 = () => {
+  // State management for authentication
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+
   const form = useForm({
     defaultValues: {
       email: "",
@@ -34,10 +46,37 @@ const Login02 = () => {
     resolver: zodResolver(formSchema),
   });
 
-  const onSubmit = (data) => {
-    console.log("Form submitted:", data);
-    // Handle login logic here
-    // Example: call your authentication API
+  const onSubmit = async (data) => {
+    setLoading(true);
+    setMessage("");
+    setError("");
+
+    try {
+      const response = await API.post("/auth/login", data);
+
+      // Save token and user info
+      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("user", JSON.stringify(response.data.user));
+
+      setMessage("Login successful! Redirecting...");
+      
+      // Redirect to dashboard after success (replace with your routing logic)
+      setTimeout(() => {
+        window.location.href = "/dashboard"; // Simple redirect
+        console.log("Redirecting to dashboard...");
+      }, 1000);
+
+    } catch (err) {
+      setError(err.response?.data?.error || "Login failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    // Placeholder for Google OAuth integration
+    console.log("Google login clicked - implement OAuth flow here");
+    setError("Google login not implemented yet");
   };
 
   return (
@@ -48,7 +87,12 @@ const Login02 = () => {
           Log in to Your App
         </p>
 
-        <Button className="mt-8 w-full gap-3">
+        <Button 
+          className="mt-8 w-full gap-3" 
+          onClick={handleGoogleLogin}
+          variant="outline"
+          disabled={loading}
+        >
           <GoogleLogo />
           Continue with Google
         </Button>
@@ -59,11 +103,26 @@ const Login02 = () => {
           <Separator />
         </div>
 
+        {/* Success Message */}
+        {message && (
+          <Alert className="w-full mb-4 border-green-200 bg-green-50">
+            <AlertDescription className="text-green-800">
+              {message}
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Error Message */}
+        {error && (
+          <Alert className="w-full mb-4 border-red-200 bg-red-50">
+            <AlertDescription className="text-red-800">
+              {error}
+            </AlertDescription>
+          </Alert>
+        )}
+
         <Form {...form}>
-          <form
-            className="w-full space-y-4"
-            onSubmit={form.handleSubmit(onSubmit)}
-          >
+          <div className="w-full space-y-4">
             <FormField
               control={form.control}
               name="email"
@@ -75,6 +134,7 @@ const Login02 = () => {
                       type="email"
                       placeholder="Enter your email"
                       className="w-full"
+                      disabled={loading}
                       {...field}
                     />
                   </FormControl>
@@ -93,6 +153,7 @@ const Login02 = () => {
                       type="password"
                       placeholder="Enter your password"
                       className="w-full"
+                      disabled={loading}
                       {...field}
                     />
                   </FormControl>
@@ -100,10 +161,14 @@ const Login02 = () => {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="mt-4 w-full">
-              Continue with Email
+            <Button 
+              onClick={form.handleSubmit(onSubmit)} 
+              className="mt-4 w-full" 
+              disabled={loading}
+            >
+              {loading ? "Signing in..." : "Continue with Email"}
             </Button>
-          </form>
+          </div>
         </Form>
 
         <div className="mt-5 space-y-5">

@@ -1,4 +1,5 @@
-import { Button } from "@/components/ui/button"
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -6,36 +7,77 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Separator } from "@/components/ui/separator"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
 
-// Simple Logo component (replace with your actual logo if you have one)
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import API from "@/services/api";
+
+// Simple Logo component (replace with your actual logo)
 const Logo = ({ className }) => (
   <div className={`font-bold text-2xl text-primary ${className}`}>Logo</div>
-)
+);
 
 const formSchema = z.object({
+  username: z
+    .string()
+    .min(3, "Username must be at least 3 characters long")
+    .max(20, "Username must be less than 20 characters")
+    .regex(/^[a-zA-Z0-9_]+$/, "Username can only contain letters, numbers, and underscores"),
   email: z.string().email("Please enter a valid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters long"),
-})
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters long")
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, "Password must contain at least one uppercase letter, one lowercase letter, and one number"),
+});
 
 const SignUp02 = () => {
+  // State management for authentication
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+
   const form = useForm({
     defaultValues: {
+      username: "",
       email: "",
       password: "",
     },
     resolver: zodResolver(formSchema),
-  })
+  });
 
-  const onSubmit = (data) => {
-    console.log("Sign-up form submitted:", data)
-    // Handle registration logic here (e.g., call your API)
-  }
+  const onSubmit = async (data) => {
+    setLoading(true);
+    setMessage("");
+    setError("");
+
+    try {
+      const response = await API.post("/auth/register", data);
+
+      setMessage("Registration successful! Redirecting to login...");
+      
+      // Redirect to login page after successful registration
+      setTimeout(() => {
+        // window.location.href = "/login"; // Simple redirect
+        // or if using React Router: navigate("/login");
+        console.log("Redirecting to login...");
+      }, 1500);
+
+    } catch (err) {
+      setError(err.response?.data?.error || "Error registering user");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignup = async () => {
+    // Placeholder for Google OAuth integration
+    console.log("Google signup clicked - implement OAuth flow here");
+    setError("Google signup not implemented yet");
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted">
@@ -45,7 +87,12 @@ const SignUp02 = () => {
           Create your account
         </p>
 
-        <Button className="mt-8 w-full gap-3">
+        <Button 
+          className="mt-8 w-full gap-3" 
+          onClick={handleGoogleSignup}
+          variant="outline"
+          disabled={loading}
+        >
           <GoogleLogo />
           Continue with Google
         </Button>
@@ -56,11 +103,45 @@ const SignUp02 = () => {
           <Separator />
         </div>
 
+        {/* Success Message */}
+        {message && (
+          <Alert className="w-full mb-4 border-green-200 bg-green-50">
+            <AlertDescription className="text-green-800">
+              {message}
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Error Message */}
+        {error && (
+          <Alert className="w-full mb-4 border-red-200 bg-red-50">
+            <AlertDescription className="text-red-800">
+              {error}
+            </AlertDescription>
+          </Alert>
+        )}
+
         <Form {...form}>
-          <form
-            className="w-full space-y-4"
-            onSubmit={form.handleSubmit(onSubmit)}
-          >
+          <div className="w-full space-y-4">
+            <FormField
+              control={form.control}
+              name="username"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Username</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="text"
+                      placeholder="Choose a username"
+                      className="w-full"
+                      disabled={loading}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="email"
@@ -72,6 +153,7 @@ const SignUp02 = () => {
                       type="email"
                       placeholder="Enter your email"
                       className="w-full"
+                      disabled={loading}
                       {...field}
                     />
                   </FormControl>
@@ -90,17 +172,25 @@ const SignUp02 = () => {
                       type="password"
                       placeholder="Enter your password"
                       className="w-full"
+                      disabled={loading}
                       {...field}
                     />
                   </FormControl>
                   <FormMessage />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Must contain at least 8 characters with uppercase, lowercase, and number
+                  </p>
                 </FormItem>
               )}
             />
-            <Button type="submit" className="mt-4 w-full">
-              Continue with Email
+            <Button 
+              onClick={form.handleSubmit(onSubmit)} 
+              className="mt-4 w-full" 
+              disabled={loading}
+            >
+              {loading ? "Creating Account..." : "Create Account"}
             </Button>
-          </form>
+          </div>
         </Form>
 
         <p className="mt-5 text-sm text-center">
@@ -112,10 +202,22 @@ const SignUp02 = () => {
             Log in
           </a>
         </p>
+
+        {/* Terms and Privacy - Optional */}
+        <p className="mt-3 text-xs text-center text-muted-foreground">
+          By creating an account, you agree to our{" "}
+          <a href="#" className="underline hover:text-foreground">
+            Terms of Service
+          </a>{" "}
+          and{" "}
+          <a href="#" className="underline hover:text-foreground">
+            Privacy Policy
+          </a>
+        </p>
       </div>
     </div>
-  )
-}
+  );
+};
 
 const GoogleLogo = () => (
   <svg
@@ -151,6 +253,6 @@ const GoogleLogo = () => (
       </clipPath>
     </defs>
   </svg>
-)
+);
 
-export default SignUp02
+export default SignUp02;

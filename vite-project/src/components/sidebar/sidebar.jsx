@@ -12,7 +12,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 
-// Menu items.
+// Menu items
 const items = [
   {
     title: "Home",
@@ -44,9 +44,9 @@ const items = [
 export function AppSidebar() {
   return (
     <Sidebar>
-          <SidebarHeader>
-              <h2 className="px-3 py-2 font-bold text-lg">My App</h2>
-          </SidebarHeader>
+      <SidebarHeader>
+        <h2 className="px-3 py-2 font-bold text-lg">My App</h2>
+      </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Application</SidebarGroupLabel>
