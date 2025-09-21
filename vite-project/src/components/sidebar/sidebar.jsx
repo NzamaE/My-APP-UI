@@ -1,4 +1,4 @@
-import { Calendar, Home, Inbox, Search, Settings } from "lucide-react"
+import { Calendar, Home, Inbox, Search, Settings,LogOutIcon } from "lucide-react"
 
 import {
   Sidebar,
@@ -12,6 +12,27 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 
+
+
+import {
+  IconCamera,
+  IconChartBar,
+  IconDashboard,
+  IconDatabase,
+  IconFileAi,
+  IconFileDescription,
+  IconFileWord,
+  IconFolder,
+  IconHelp,
+  IconInnerShadowTop,
+  IconListDetails,
+  IconReport,
+  IconSearch,
+  IconSettings,
+  IconUsers,
+
+} from "@tabler/icons-react"
+
 // Menu items
 const items = [
   {
@@ -19,33 +40,35 @@ const items = [
     url: "#",
     icon: Home,
   },
-  {
-    title: "Inbox",
+   {
+    title: "Leaderboard",
     url: "#",
-    icon: Inbox,
+    icon: IconListDetails,
   },
   {
-    title: "Calendar",
+    title: "Isights",
     url: "#",
-    icon: Calendar,
+    icon: IconChartBar,
   },
-  {
-    title: "Search",
-    url: "#",
-    icon: Search,
-  },
+ 
+  ,
   {
     title: "Settings",
     url: "#",
     icon: Settings,
   },
+  {
+    title: "Sign Out",
+    url: "#",
+    icon:  LogOutIcon,
+  }
 ]
 
 export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader>
-        <h2 className="px-3 py-2 font-bold text-lg">My App</h2>
+        <h2 className="px-3 py-2 font-bold text-lg">ecoTracker</h2>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>

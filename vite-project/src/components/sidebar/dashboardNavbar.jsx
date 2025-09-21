@@ -9,6 +9,11 @@ import {
 } from "lucide-react"
 
 import NotificationMenu from "@/components/notification-menu"
+//Side bar
+import { SidebarProvider } from "@/components/ui/sidebar"
+import { AppSidebar } from "@/components/sidebar/sidebar"
+
+
 import TeamSwitcher from "@/components/team-switcher"
 import UserMenu from "@/components/user-menu"
 import { Button } from "@/components/ui/button"
@@ -35,73 +40,18 @@ const navigationLinks = [
 
 export default function DashboardNavbar() {
   return (
-    <header  className="sticky top-0 z-50 border-b px-4 md:px-6 bg-background">
-      <div className="flex h-16 items-center justify-between gap-4">
+    <header  className="sticky top-0 z-100 border-b px-4 md:px-2 bg-background">
+      <div className="flex h-12 items-left justify-between gap-5">
+      
         {/* Left side */}
-        <div className="flex flex-1 items-center gap-2">
-          {/* Mobile menu trigger */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                className="group size-8 md:hidden"
-                variant="ghost"
-                size="icon"
-              >
-                <svg
-                  className="pointer-events-none"
-                  width={16}
-                  height={16}
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path
-                    d="M4 12L20 12"
-                    className="origin-center -translate-y-[7px] transition-all group-aria-expanded:rotate-[315deg]"
-                  />
-                  <path
-                    d="M4 12H20"
-                    className="origin-center transition-all group-aria-expanded:rotate-45"
-                  />
-                  <path
-                    d="M4 12H20"
-                    className="origin-center translate-y-[7px] transition-all group-aria-expanded:rotate-[135deg]"
-                  />
-                </svg>
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent align="start" className="w-48 p-1 md:hidden">
-              <NavigationMenu className="max-w-none *:w-full">
-                <NavigationMenuList className="flex-col items-start gap-0 md:gap-2">
-                  {navigationLinks.map((link, index) => {
-                    const Icon = link.icon
-                    return (
-                      <NavigationMenuItem key={index} className="w-full">
-                        <NavigationMenuLink
-                          href={link.href}
-                          className="flex-row items-center gap-2 py-1.5"
-                        >
-                          <Icon
-                            size={16}
-                            className="text-muted-foreground"
-                            aria-hidden="true"
-                          />
-                          <span>{link.label}</span>
-                        </NavigationMenuLink>
-                      </NavigationMenuItem>
-                    )
-                  })}
-                </NavigationMenuList>
-              </NavigationMenu>
-            </PopoverContent>
-          </Popover>
-
-          <TeamSwitcher teams={teams} defaultTeam={teams[0]} />
+        <SidebarProvider>
+        <div className="flex min-h-[calc(100vh-4rem)]">
+          <AppSidebar />
         </div>
+      </SidebarProvider>
 
+
+       
         {/* Middle area */}
         <NavigationMenu className="max-md:hidden">
           <NavigationMenuList className="gap-2">
@@ -131,7 +81,7 @@ export default function DashboardNavbar() {
               size={16}
               aria-hidden="true"
             />
-            <span className="max-sm:sr-only">Post</span>
+            <span className="max-sm:sr-only">Log Actvity</span>
           </Button>
           <NotificationMenu />
           <UserMenu />
