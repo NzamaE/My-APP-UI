@@ -1,4 +1,3 @@
-// src/services/activityService.js - Updated for automatic carbon calculation
 import API from './api';
 
 // Activity API service functions
@@ -120,6 +119,50 @@ export const activityService = {
         },
         activityDetails: activityData.activityDetails || {}
       });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // ===================================
+  // DASHBOARD & ANALYTICS FUNCTIONS
+  // ===================================
+
+  // Get dashboard data with community comparison
+  getDashboardData: async () => {
+    try {
+      const response = await API.get('/dashboard');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // Get streak and weekly tracking data
+  getStreakData: async () => {
+    try {
+      const response = await API.get('/streak');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // Get leaderboard data
+  getLeaderboardData: async (period = '30') => {
+    try {
+      const response = await API.get(`/leaderboard?period=${period}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // Get user statistics with period filter
+  getUserStats: async (period = '30') => {
+    try {
+      const response = await API.get(`/stats?period=${period}`);
       return response.data;
     } catch (error) {
       throw error.response?.data || error;
@@ -315,7 +358,7 @@ export const activityHelpers = {
 
   // Format carbon footprint for display
   formatCarbonFootprint: (carbonFootprint) => {
-    if (carbonFootprint < 0.01) {
+    if (!carbonFootprint || carbonFootprint < 0.01) {
       return '<0.01 kg CO₂';
     }
     return `${carbonFootprint.toFixed(2)} kg CO₂`;
@@ -335,6 +378,39 @@ export const activityHelpers = {
       'negative': '#059669'     // emerald-600 (saves emissions)
     };
     return colors[intensity] || colors.medium;
+  },
+
+  // ===================================
+  // DASHBOARD HELPER FUNCTIONS
+  // ===================================
+
+  // Format streak data for display
+  formatStreak: (days) => {
+    if (days === 0) return "No streak";
+    if (days === 1) return "1 day";
+    return `${days} days`;
+  },
+
+  // Get streak badge based on length
+  getStreakBadge: (currentStreak, longestStreak) => {
+    if (currentStreak === 0) return { text: "Start Today", color: "gray" };
+    if (currentStreak >= longestStreak) return { text: "Personal Best!", color: "gold" };
+    if (currentStreak >= 30) return { text: "Amazing!", color: "purple" };
+    if (currentStreak >= 14) return { text: "Great Streak!", color: "green" };
+    if (currentStreak >= 7) return { text: "Week Strong!", color: "blue" };
+    return { text: "Building Up", color: "gray" };
+  },
+
+  // Calculate percentage vs community average
+  getPerformanceVsCommunity: (userTotal, communityAverage) => {
+    if (!communityAverage) return { percentage: 0, status: "unknown" };
+    
+    const difference = ((userTotal - communityAverage) / communityAverage) * 100;
+    
+    if (difference < -20) return { percentage: Math.abs(difference), status: "excellent" };
+    if (difference < -10) return { percentage: Math.abs(difference), status: "good" };
+    if (difference < 10) return { percentage: Math.abs(difference), status: "average" };
+    return { percentage: difference, status: "needs_improvement" };
   }
 };
 
