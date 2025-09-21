@@ -1,5 +1,6 @@
 // src/components/Dashboard/DashboardNavbar.jsx
 
+import { useState } from "react"
 import {
   CompassIcon,
   FeatherIcon,
@@ -12,7 +13,6 @@ import NotificationMenu from "@/components/notification-menu"
 //Side bar
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/sidebar/sidebar"
-
 
 import TeamSwitcher from "@/components/team-switcher"
 import UserMenu from "@/components/user-menu"
@@ -29,6 +29,9 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 
+// Import the activity logging dialog
+import ActivityLogDialog from "@/components/ActivityLogDialog"
+
 const teams = ["Acme Inc.", "Origin UI", "Junon"]
 
 const navigationLinks = [
@@ -39,54 +42,77 @@ const navigationLinks = [
 ]
 
 export default function DashboardNavbar() {
+  const [isActivityDialogOpen, setIsActivityDialogOpen] = useState(false)
+
+  const handleLogActivity = () => {
+    setIsActivityDialogOpen(true)
+  }
+
+  const handleActivitySaved = () => {
+    setIsActivityDialogOpen(false)
+    // Optionally refresh data in parent components or show success toast
+  }
+
   return (
-    <header  className="sticky top-0 z-100 border-b px-4 md:px-2 bg-background">
-      <div className="flex h-12 items-left justify-between gap-5">
-      
-        {/* Left side */}
-        <SidebarProvider>
-        <div className="flex min-h-[calc(100vh-4rem)]">
-          <AppSidebar />
+    <>
+      <header className="sticky top-0 z-100 border-b px-4 md:px-2 bg-background">
+        <div className="flex h-12 items-left justify-between gap-5">
+        
+          {/* Left side */}
+          <SidebarProvider>
+          <div className="flex min-h-[calc(100vh-4rem)]">
+            <AppSidebar />
+          </div>
+        </SidebarProvider>
+
+         
+          {/* Middle area */}
+          <NavigationMenu className="max-md:hidden">
+            <NavigationMenuList className="gap-2">
+              {navigationLinks.map((link, index) => {
+                const Icon = link.icon
+                return (
+                  <NavigationMenuItem key={index}>
+                    <NavigationMenuLink
+                      href={link.href}
+                      className="flex size-8 items-center justify-center p-1.5"
+                      title={link.label}
+                    >
+                      <Icon aria-hidden="true" />
+                      <span className="sr-only">{link.label}</span>
+                    </NavigationMenuLink>
+                  </NavigationMenuItem>
+                )
+              })}
+            </NavigationMenuList>
+          </NavigationMenu>
+
+          {/* Right side */}
+          <div className="flex flex-1 items-center justify-end gap-4">
+            <Button 
+              size="sm" 
+              className="text-sm max-sm:aspect-square max-sm:p-0"
+              onClick={handleLogActivity}
+            >
+              <PlusIcon
+                className="opacity-60 sm:-ms-1"
+                size={16}
+                aria-hidden="true"
+              />
+              <span className="max-sm:sr-only">Log Activity</span>
+            </Button>
+            <NotificationMenu />
+            <UserMenu />
+          </div>
         </div>
-      </SidebarProvider>
+      </header>
 
-
-       
-        {/* Middle area */}
-        <NavigationMenu className="max-md:hidden">
-          <NavigationMenuList className="gap-2">
-            {navigationLinks.map((link, index) => {
-              const Icon = link.icon
-              return (
-                <NavigationMenuItem key={index}>
-                  <NavigationMenuLink
-                    href={link.href}
-                    className="flex size-8 items-center justify-center p-1.5"
-                    title={link.label}
-                  >
-                    <Icon aria-hidden="true" />
-                    <span className="sr-only">{link.label}</span>
-                  </NavigationMenuLink>
-                </NavigationMenuItem>
-              )
-            })}
-          </NavigationMenuList>
-        </NavigationMenu>
-
-        {/* Right side */}
-        <div className="flex flex-1 items-center justify-end gap-4">
-          <Button size="sm" className="text-sm max-sm:aspect-square max-sm:p-0">
-            <PlusIcon
-              className="opacity-60 sm:-ms-1"
-              size={16}
-              aria-hidden="true"
-            />
-            <span className="max-sm:sr-only">Log Actvity</span>
-          </Button>
-          <NotificationMenu />
-          <UserMenu />
-        </div>
-      </div>
-    </header>
+      {/* Activity Logging Dialog */}
+      <ActivityLogDialog 
+        open={isActivityDialogOpen}
+        onOpenChange={setIsActivityDialogOpen}
+        onActivitySaved={handleActivitySaved}
+      />
+    </>
   )
 }

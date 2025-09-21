@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+
 import Navbar from '@/components/Navbar'
 import Hero06 from '@/components/hero-06/hero-06'
 import Features01 from '@/components/Features-01/features-01'
