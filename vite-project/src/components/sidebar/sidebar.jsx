@@ -1,5 +1,4 @@
-import { Calendar, Home, Inbox, Search, Settings,LogOutIcon } from "lucide-react"
-
+import { Calendar, Home, Inbox, Search, Settings, LogOut } from "lucide-react"
 import {
   Sidebar,
   SidebarHeader,
@@ -10,76 +9,58 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarFooter,
 } from "@/components/ui/sidebar"
-
-
-
 import {
-  IconCamera,
   IconChartBar,
-  IconDashboard,
-  IconDatabase,
-  IconFileAi,
-  IconFileDescription,
-  IconFileWord,
-  IconFolder,
-  IconHelp,
-  IconInnerShadowTop,
   IconListDetails,
-  IconReport,
-  IconSearch,
-  IconSettings,
-  IconUsers,
-
 } from "@tabler/icons-react"
 
-// Menu items
 const items = [
   {
-    title: "Home",
-    url: "#",
+    title: "Dashboard",
+    url: "/dashboard",
     icon: Home,
   },
-   {
-    title: "Leaderboard",
-    url: "#",
+  {
+    title: "Leaderboard", 
+    url: "/leaderboard",
     icon: IconListDetails,
   },
   {
-    title: "Isights",
-    url: "#",
+    title: "Insights", // Fixed typo: "Isights" -> "Insights"
+    url: "/insights",
     icon: IconChartBar,
   },
- 
-  ,
   {
     title: "Settings",
-    url: "#",
+    url: "/settings", 
     icon: Settings,
   },
-  {
-    title: "Sign Out",
-    url: "#",
-    icon:  LogOutIcon,
-  }
 ]
 
 export function AppSidebar() {
+  const handleSignOut = () => {
+    localStorage.removeItem("token")
+    window.location.href = "/login"
+  }
+
   return (
     <Sidebar>
-      <SidebarHeader>
-        <h2 className="px-3 py-2 font-bold text-lg">ecoTracker</h2>
+      <SidebarHeader className="border-b px-6 py-4">
+        <h2 className="text-xl font-bold text-primary">🌱 ecoTracker</h2>
       </SidebarHeader>
-      <SidebarContent>
+      
+      <SidebarContent className="px-4 py-4">
         <SidebarGroup>
-          <SidebarGroupLabel>Application</SidebarGroupLabel>
+          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="space-y-1">
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <a href={item.url}>
-                      <item.icon />
+                    <a href={item.url} className="flex items-center gap-3 px-3 py-2">
+                      <item.icon size={18} />
                       <span>{item.title}</span>
                     </a>
                   </SidebarMenuButton>
@@ -89,6 +70,13 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
+      <SidebarFooter className="border-t px-4 py-4">
+        <SidebarMenuButton onClick={handleSignOut} className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50">
+          <LogOut size={18} />
+          <span>Sign Out</span>
+        </SidebarMenuButton>
+      </SidebarFooter>
     </Sidebar>
   )
 }

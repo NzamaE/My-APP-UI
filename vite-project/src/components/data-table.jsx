@@ -213,12 +213,15 @@ export function DataTable({ onAddActivity, onEditActivity }) {
   })
   const [loading, setLoading] = React.useState(true)
   const [isDeleting, setIsDeleting] = React.useState(null)
+  
+  // FIXED: Proper filter state initialization - no "all" values
   const [filters, setFilters] = React.useState({
-    activityType: "all",
+    activityType: "",
     activityName: "",
     startDate: "",
     endDate: "",
   })
+  
   const [totalCarbonFootprint, setTotalCarbonFootprint] = React.useState(0)
 
   const sortableId = React.useId()
@@ -246,29 +249,55 @@ export function DataTable({ onAddActivity, onEditActivity }) {
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    manualPagination: false, // We'll handle client-side pagination for now
+    manualPagination: false,
   })
 
-  // Fetch activities from API
+  // FIXED: Improved fetchActivities with proper parameter handling
   const fetchActivities = React.useCallback(async () => {
     try {
       setLoading(true)
-      const response = await activityService.getActivities({
-        ...filters,
-        limit: 1000, // Get all activities for client-side pagination
-      })
+      
+      // Build clean filter parameters - only include non-empty values
+      const filterParams = {}
+      
+      if (filters.activityType && filters.activityType.trim() !== "") {
+        filterParams.activityType = filters.activityType.trim()
+      }
+      
+      if (filters.activityName && filters.activityName.trim() !== "") {
+        filterParams.activityName = filters.activityName.trim()
+      }
+      
+      if (filters.startDate) {
+        filterParams.startDate = filters.startDate
+      }
+      
+      if (filters.endDate) {
+        filterParams.endDate = filters.endDate
+      }
+      
+      // Get all activities for client-side pagination
+      filterParams.limit = 1000
+      
+      console.log("Sending filter params to API:", filterParams)
+      
+      const response = await activityService.getActivities(filterParams)
+      
+      console.log("API Response:", response)
       
       setData(response.activities || [])
       setTotalCarbonFootprint(response.summary?.totalCarbonFootprint || 0)
+      
     } catch (error) {
       console.error("Failed to fetch activities:", error)
+      setData([])
       toast.error("Failed to fetch activities. Please try again.")
     } finally {
       setLoading(false)
     }
-  }, [filters, toast])
+  }, [filters])
 
-  // Initial load and when filters change
+  // Fetch activities when component mounts or filters change
   React.useEffect(() => {
     fetchActivities()
   }, [fetchActivities])
@@ -289,7 +318,6 @@ export function DataTable({ onAddActivity, onEditActivity }) {
       onEditActivity(activity)
     } else {
       console.log("Edit activity:", activity)
-      // Default behavior - you can implement a modal here
     }
   }
 
@@ -298,7 +326,7 @@ export function DataTable({ onAddActivity, onEditActivity }) {
       setIsDeleting(activityId)
       await activityService.deleteActivity(activityId)
       
-      // Remove from local state
+      // Remove from local state immediately
       setData((prev) => prev.filter((item) => item._id !== activityId))
       
       toast.success("Activity deleted successfully.")
@@ -313,23 +341,45 @@ export function DataTable({ onAddActivity, onEditActivity }) {
     }
   }
 
+  // FIXED: Simplified filter change handler
   const handleFilterChange = (key, value) => {
+    console.log(`Filter change: ${key} = "${value}"`)
+    
+    // Handle the special "all" case for activityType
+    let actualValue = value
+    if (key === "activityType" && value === "all") {
+      actualValue = ""
+    }
+    
     setFilters((prev) => ({
       ...prev,
-      [key]: value,
+      [key]: actualValue,
+    }))
+    
+    // Reset to first page when filters change
+    setPagination((prev) => ({
+      ...prev,
+      pageIndex: 0
     }))
   }
 
+  // FIXED: Clear filters function
   const clearFilters = () => {
+    console.log("Clearing all filters")
     setFilters({
-      activityType: "all",
+      activityType: "",
       activityName: "",
       startDate: "",
       endDate: "",
     })
   }
 
-  const hasActiveFilters = filters.activityType !== "all" || filters.activityName !== "" || filters.startDate !== "" || filters.endDate !== ""
+  // FIXED: Check for active filters (any non-empty value)
+  const hasActiveFilters = 
+    filters.activityType !== "" || 
+    filters.activityName !== "" || 
+    filters.startDate !== "" || 
+    filters.endDate !== ""
 
   return (
     <DataTableContext.Provider value={{ handleEdit, handleRemove, isDeleting }}>
@@ -396,7 +446,7 @@ export function DataTable({ onAddActivity, onEditActivity }) {
           </div>
         </div>
 
-        {/* Filters */}
+        {/* FIXED: Filters section with proper value handling */}
         <div className="px-4 lg:px-6">
           <div className="flex flex-wrap gap-4 items-end p-4 bg-muted/50 rounded-lg">
             <div className="flex items-center gap-2">
@@ -408,7 +458,7 @@ export function DataTable({ onAddActivity, onEditActivity }) {
               <Label htmlFor="activity-type" className="text-xs">Activity Type</Label>
               <Select
                 value={filters.activityType || "all"}
-                onValueChange={(value) => handleFilterChange("activityType", value === "all" ? "" : value)}
+                onValueChange={(value) => handleFilterChange("activityType", value)}
               >
                 <SelectTrigger className="w-32 h-8" id="activity-type">
                   <SelectValue placeholder="All types" />
@@ -512,7 +562,10 @@ export function DataTable({ onAddActivity, onEditActivity }) {
                       ) : (
                         <TableRow>
                           <TableCell colSpan={columns.length} className="h-24 text-center">
-                            {hasActiveFilters ? "No activities match your filters." : "No activities found. Add your first activity!"}
+                            {hasActiveFilters 
+                              ? "No activities match your filters." 
+                              : "No activities found. Add your first activity!"
+                            }
                           </TableCell>
                         </TableRow>
                       )}
